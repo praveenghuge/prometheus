@@ -24,7 +24,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/common/model"
 
-	"github.com/prometheus/prometheus/pkg/labels"
+	"github.com/prometheus/prometheus/model/labels"
 	"github.com/prometheus/prometheus/promql/parser"
 )
 
@@ -56,7 +56,7 @@ func funcTime(vals []parser.Value, args parser.Expressions, enh *EvalNodeHelper)
 // It calculates the rate (allowing for counter resets if isCounter is true),
 // extrapolates if the first/last sample is close to the boundary, and returns
 // the result as either per-second (if isRate is true) or overall.
-func extrapolatedRate(vals []parser.Value, args parser.Expressions, enh *EvalNodeHelper, isCounter bool, isRate bool) Vector {
+func extrapolatedRate(vals []parser.Value, args parser.Expressions, enh *EvalNodeHelper, isCounter, isRate bool) Vector {
 	ms := args[0].(*parser.MatrixSelector)
 	vs := ms.VectorSelector.(*parser.VectorSelector)
 	var (
@@ -1227,5 +1227,7 @@ func createLabelsForAbsentFunction(expr parser.Expr) labels.Labels {
 }
 
 func stringFromArg(e parser.Expr) string {
-	return unwrapStepInvariantExpr(e).(*parser.StringLiteral).Val
+	tmp := unwrapStepInvariantExpr(e) // Unwrap StepInvariant
+	unwrapParenExpr(&tmp)             // Optionally unwrap ParenExpr
+	return tmp.(*parser.StringLiteral).Val
 }

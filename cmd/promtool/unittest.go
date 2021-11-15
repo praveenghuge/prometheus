@@ -30,7 +30,7 @@ import (
 	"github.com/prometheus/common/model"
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/prometheus/prometheus/pkg/labels"
+	"github.com/prometheus/prometheus/model/labels"
 	"github.com/prometheus/prometheus/promql"
 	"github.com/prometheus/prometheus/promql/parser"
 	"github.com/prometheus/prometheus/rules"
@@ -387,7 +387,6 @@ Outer:
 
 // seriesLoadingString returns the input series in PromQL notation.
 func (tg *testGroup) seriesLoadingString() string {
-
 	result := fmt.Sprintf("load %v\n", shortDuration(tg.Interval))
 	for _, is := range tg.InputSeries {
 		result += fmt.Sprintf("  %v %v\n", is.Series, is.Values)

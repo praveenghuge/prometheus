@@ -41,8 +41,8 @@ import (
 
 	"github.com/prometheus/prometheus/config"
 	"github.com/prometheus/prometheus/discovery/targetgroup"
-	"github.com/prometheus/prometheus/pkg/labels"
-	"github.com/prometheus/prometheus/pkg/relabel"
+	"github.com/prometheus/prometheus/model/labels"
+	"github.com/prometheus/prometheus/model/relabel"
 )
 
 const (
@@ -303,7 +303,6 @@ func (n *Manager) nextBatch() []*Alert {
 
 // Run dispatches notifications continuously.
 func (n *Manager) Run(tsets <-chan map[string][]*targetgroup.Group) {
-
 	for {
 		select {
 		case <-n.ctx.Done():

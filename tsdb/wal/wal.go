@@ -118,7 +118,7 @@ func (e *CorruptionErr) Error() string {
 // OpenWriteSegment opens segment k in dir. The returned segment is ready for new appends.
 func OpenWriteSegment(logger log.Logger, dir string, k int) (*Segment, error) {
 	segName := SegmentName(dir, k)
-	f, err := os.OpenFile(segName, os.O_WRONLY|os.O_APPEND, 0666)
+	f, err := os.OpenFile(segName, os.O_WRONLY|os.O_APPEND, 0o666)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +144,7 @@ func OpenWriteSegment(logger log.Logger, dir string, k int) (*Segment, error) {
 
 // CreateSegment creates a new segment k in dir.
 func CreateSegment(dir string, k int) (*Segment, error) {
-	f, err := os.OpenFile(SegmentName(dir, k), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile(SegmentName(dir, k), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o666)
 	if err != nil {
 		return nil, err
 	}
@@ -260,7 +260,7 @@ func NewSize(logger log.Logger, reg prometheus.Registerer, dir string, segmentSi
 	if segmentSize%pageSize != 0 {
 		return nil, errors.New("invalid segment size")
 	}
-	if err := os.MkdirAll(dir, 0777); err != nil {
+	if err := os.MkdirAll(dir, 0o777); err != nil {
 		return nil, errors.Wrap(err, "create dir")
 	}
 	if logger == nil {
@@ -452,10 +452,7 @@ func (w *WAL) Repair(origErr error) error {
 	if err != nil {
 		return err
 	}
-	if err := w.setSegment(s); err != nil {
-		return err
-	}
-	return nil
+	return w.setSegment(s)
 }
 
 // SegmentName builds a segment name for the directory.
@@ -472,6 +469,10 @@ func (w *WAL) NextSegment() error {
 
 // nextSegment creates the next segment and closes the previous one.
 func (w *WAL) nextSegment() error {
+	if w.closed {
+		return errors.New("wal is closed")
+	}
+
 	// Only flush the current page if it actually holds data.
 	if w.page.alloc > 0 {
 		if err := w.flushPage(true); err != nil {
